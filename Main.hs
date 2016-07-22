@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# OPTIONS_GHC -Wall #-}
 -- | 
 
 module Main where
@@ -24,6 +25,11 @@ data Pedigree = Pedigree { bits :: !Integer
 -- choices.
 myPedigree :: IO Pedigree
 myPedigree = undefined
+
+-- IO-based logical clocks.
+--------------------------------------------------------------------------------
+
+-- For this we need to initialize GLOBAL state.
 
 -- | When we uniquely hold the minimum logical clock value, execute an
 -- action that is potentially racey or nondeterministic.
@@ -55,12 +61,32 @@ data Par s a
 fork :: Par s () -> Par s ()
 fork = undefined
 
+-- For now this simple keeps track of "where we are at".
+newtype AllocatorState = AllocatorState (IORef Word64)
+
+-- | The size of blocks doled out.
+blocksize :: Word64
+blocksize = 2 ^ (27::Word64) -- About 134M
+
+
 -- | Return a deterministic, unique value.  The value returned is
 -- guaranteed not to caollide with other calls to gensym, past or
 -- future, this thread or another thread.
 gensym :: Par s Word64
 gensym = undefined
+   -- First, check if we have a thread-local counter.
+   -- If not ask the global allocator for a block.
+   -- If so, check if we have exhausted the current block.
+   -- If everything looks good, bump the counter and return the value.
 
 
+-- | Retrieve a reserved block of numbers starting with the value returned.
+getBlock :: IO Word64
+getBlock =
+  -- Increment global counter
+  unsafeWithLock undefined
+            
 
-main = print "hello"
+main :: IO ()
+main = do putStrLn "hi"
+          return ()
