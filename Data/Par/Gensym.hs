@@ -1,8 +1,11 @@
 {-# LANGUAGE BangPatterns #-}
-{-# OPTIONS_GHC -Wall #-}
+-- {-# OPTIONS_GHC -Wall #-}
 -- | 
 
-module Main where
+module Data.Par.Gensym
+       (withLock
+       )
+       where
 
 import Control.Monad.ST
 import Data.IORef
@@ -26,7 +29,7 @@ data Pedigree = Pedigree { bits :: !Integer
 myPedigree :: IO Pedigree
 myPedigree = undefined
 
--- IO-based logical clocks.
+-- IO-based logical clocks.  
 --------------------------------------------------------------------------------
 
 -- For this we need to initialize GLOBAL state.
@@ -38,6 +41,21 @@ myPedigree = undefined
 -- can be accomplished with the lock.
 unsafeWithLock :: IO a -> IO a
 unsafeWithLock = undefined
+
+-- | Advance the clock of the current thread.
+-- 
+--   This is a major TUNING decision.  A thread waiting to perform a
+--   locked (deterministic) action may need to wait for ALL other
+--   threads to check in and advance their logical clock one or more
+--   times.  Thus this should happen frequently, but not so frequently
+--   as to create excessive overhead.
+--
+--   This is part of the unsafe, internal interface.  All threads must
+--   agree on 
+advanceClock :: Word64 -> IO ()
+advanceClock = undefined
+
+
 
 -- Indexed logical clock values.
 --------------------------------------------------------------------------------
